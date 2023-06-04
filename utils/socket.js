@@ -1,5 +1,5 @@
 import { io } from "socket.io-client";
 
-  const socket = io("https://36z2u5-3000.csb.app");
+  const socket = io(process.env.NEXT_PUBLIC_SOCKET_URI);
 
 export default socket
