@@ -1,12 +1,18 @@
 import axios from "axios";
-import { useCookies } from "react-cookie";
+import useReactCookie from "../utils/useReactCookie";
 
 const useFetchUserInfo = () => {
-  const [cookies] = useCookies(["accessToken", "refreshToken"]);
-  const accessToken = cookies.accessToken;
-  const refreshToken = cookies.refreshToken;
+  const { setAccessToken } = useReactCookie();
 
-  const fetchUserInfo = async () => {
+  const fetchUserInfo = async (retryCount = 0) => {
+    const cookies = document.cookie.split(";");
+    const accessToken = cookies
+      .find((cookie) => cookie.trim().startsWith("accessToken="))
+      ?.split("=")[1];
+    const refreshToken = cookies
+      .find((cookie) => cookie.trim().startsWith("refreshToken="))
+      ?.split("=")[1];
+
     try {
       const response = await axios.get(
         process.env.NEXT_PUBLIC_BACKEND_URI + "/users",
@@ -20,19 +26,27 @@ const useFetchUserInfo = () => {
       return { data: response.data, error: null };
     } catch (error) {
       if (error.response && error.response.status === 401) {
-        try {
-          const refreshResponse = await axios.post("/refresh-token", {
-            refreshToken,
-          });
+        if (retryCount < 3) {
+          try {
+            const refreshResponse = await axios.post(
+              process.env.NEXT_PUBLIC_BACKEND_URI + "/refreshtoken",
+              {
+                hello: refreshToken,
+              }
+            );
 
-          const newAccessToken = refreshResponse.data.accessToken;
-          document.cookie = `accessToken=${newAccessToken}`; // Update the access token in the cookie
-
-          // Retry the API request with the new access token
-          return fetchUserInfo();
-        } catch (refreshError) {
-          console.error("Failed to refresh access token:", refreshError);
-          return { data: null, error: refreshError.message };
+            const newAccessToken = refreshResponse.data.accessToken;
+            console.log("giving");
+            console.log(refreshResponse.data);
+            setAccessToken(newAccessToken);
+            return fetchUserInfo(retryCount + 1);
+          } catch (refreshError) {
+            console.error("Failed to refresh access token:", refreshError);
+            return { data: null, error: refreshError.message };
+          }
+        } else {
+          console.error("Maximum retry count exceeded");
+          return { data: null, error: "Maximum retry count exceeded" };
         }
       }
 

@@ -10,16 +10,16 @@ const useLoginUser = () => {
     const refreshToken = getRefreshToken();
 
     try {
-      const response = await axios.get(
-        process.env.NEXT_PUBLIC_BACKEND_URI + "/login",
-        {
-          data: {
-            email,
-            password,
-          },
-        }
+      const postData = {
+        email,
+        password,
+      };
+      const response = await axios.post(
+        `${process.env.NEXT_PUBLIC_BACKEND_URI}/login`,
+        postData
       );
-
+      setAccessToken(response.data.message.access_token);
+      setRefreshToken(response.data.message.refresh_token);
       return { data: response.data, error: null };
     } catch (error) {
       console.error("Failed to login user:", error);
