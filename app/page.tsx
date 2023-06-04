@@ -1,5 +1,6 @@
-import Image from 'next/image'
-import styles from './page.module.css'
+import Image from "next/image";
+import styles from "./page.module.css";
+import Link from "next/link";
 
 export default function Home() {
   return (
@@ -10,12 +11,8 @@ export default function Home() {
           <code className={styles.code}>app/page.tsx</code>
         </p>
         <div>
-          <a
-            href="https://vercel.com?utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            By{' '}
+          By{" "}
+          <Link href="/chats">
             <Image
               src="/vercel.svg"
               alt="Vercel Logo"
@@ -24,7 +21,7 @@ export default function Home() {
               height={24}
               priority
             />
-          </a>
+          </Link>
         </div>
       </div>
 
@@ -91,5 +88,5 @@ export default function Home() {
         </a>
       </div>
     </main>
-  )
+  );
 }
